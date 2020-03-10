@@ -1,6 +1,5 @@
 use std::ops; // Used for operator overloading
 
-
 #[derive(Copy, Clone)]
 pub struct Vector2 {
 	pub x: f32,
@@ -10,7 +9,7 @@ pub struct Vector2 {
 // Constructor ================
 #[allow(dead_code)]
 pub fn new(x: f32, y: f32) -> Vector2 {
-	return Vector2{x: x, y: y};
+	return Vector2 { x: x, y: y };
 }
 
 // Implementations ================
@@ -29,14 +28,13 @@ impl Vector2 {
 	pub fn zero(&mut self) {
 		self.x = 0.0;
 		self.y = 0.0;
-    }
-	
+	}
 	pub fn dot(&self, rhs: Vector2) -> f32 {
 		return self.x * rhs.x + self.y * rhs.y;
 	}
 
-    pub fn print(&self) {
-        println!("({}, {})", self.x, self.y);
+	pub fn print(&self) {
+		println!("({}, {})", self.x, self.y);
 	}
 
 	pub fn rotate(&mut self, rad: f32) {
@@ -50,25 +48,33 @@ impl Vector2 {
 // Operators ================
 #[allow(dead_code)]
 impl ops::Add<Vector2> for Vector2 {
-    type Output = Vector2;
-    fn add(self, rhs: Vector2) -> Vector2 {
-		return Vector2{x: self.x + rhs.x, y: self.y + rhs.y};
-    }
+	type Output = Vector2;
+	fn add(self, rhs: Vector2) -> Vector2 {
+		return Vector2 {
+			x: self.x + rhs.x,
+			y: self.y + rhs.y,
+		};
+	}
 }
 
 #[allow(dead_code)]
 impl ops::Sub<Vector2> for Vector2 {
-    type Output = Vector2;
-    fn sub(self, rhs: Vector2) -> Vector2 {
-		return Vector2{x: self.x - rhs.x, y: self.y - rhs.y};
-    }
+	type Output = Vector2;
+	fn sub(self, rhs: Vector2) -> Vector2 {
+		return Vector2 {
+			x: self.x - rhs.x,
+			y: self.y - rhs.y,
+		};
+	}
 }
 
 #[allow(dead_code)]
 impl ops::Mul<Vector2> for Vector2 {
-    type Output = Vector2;
-    fn mul(self, rhs: Vector2) -> Vector2 {
-		return Vector2{x: self.x * rhs.x, y: self.y * rhs.y};
-    }
+	type Output = Vector2;
+	fn mul(self, rhs: Vector2) -> Vector2 {
+		return Vector2 {
+			x: self.x * rhs.x,
+			y: self.y * rhs.y,
+		};
+	}
 }
-
