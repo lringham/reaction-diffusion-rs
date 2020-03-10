@@ -39,11 +39,11 @@ impl Vector2 {
         println!("({}, {})", self.x, self.y);
 	}
 
-	pub fn rotate(&mut self, deg: f32) {
+	pub fn rotate(&mut self, rad: f32) {
 		let x = self.x;
 		let y = self.y;
-		self.x = deg.cos() * x - deg.sin() * y;
-		self.y = deg.sin() * x + deg.cos() * y;
+		self.x = rad.cos() * x - rad.sin() * y;
+		self.y = rad.sin() * x + rad.cos() * y;
 	}
 }
 
