@@ -1,24 +1,20 @@
-use std::ops;
+use std::ops; // Used for operator overloading
 
 
-// trait Vector {
-// 	fn len(&self) -> f32;
-// 	fn normalize(&mut self);
-// 	fn zero(&mut self);
-// 	fn print();
-// }
-
+#[derive(Copy, Clone)]
 pub struct Vector2 {
 	pub x: f32,
 	pub y: f32,
 }
 
+// Constructor ================
+#[allow(dead_code)]
 pub fn new(x: f32, y: f32) -> Vector2 {
-    return Vector2{x, y};
+	return Vector2{x: x, y: y};
 }
 
-// ================ implementations
-
+// Implementations ================
+#[allow(dead_code)]
 impl Vector2 {
 	pub fn len(&self) -> f32 {
 		return (self.x * self.x + self.y * self.y).sqrt();
@@ -42,25 +38,37 @@ impl Vector2 {
     pub fn print(&self) {
         println!("({}, {})", self.x, self.y);
 	}
+
+	pub fn rotate(&mut self, deg: f32) {
+		let x = self.x;
+		let y = self.y;
+		self.x = deg.cos() * x - deg.sin() * y;
+		self.y = deg.sin() * x + deg.cos() * y;
+	}
 }
 
+// Operators ================
+#[allow(dead_code)]
 impl ops::Add<Vector2> for Vector2 {
     type Output = Vector2;
-    fn add(self, _rhs: Vector2) -> Vector2 {
-		return new(self.x + _rhs.x, self.y + _rhs.y);
+    fn add(self, rhs: Vector2) -> Vector2 {
+		return Vector2{x: self.x + rhs.x, y: self.y + rhs.y};
     }
 }
 
+#[allow(dead_code)]
 impl ops::Sub<Vector2> for Vector2 {
     type Output = Vector2;
-    fn sub(self, _rhs: Vector2) -> Vector2 {
-		return new(self.x - _rhs.x, self.y - _rhs.y);
+    fn sub(self, rhs: Vector2) -> Vector2 {
+		return Vector2{x: self.x - rhs.x, y: self.y - rhs.y};
     }
 }
 
+#[allow(dead_code)]
 impl ops::Mul<Vector2> for Vector2 {
     type Output = Vector2;
-    fn mul(self, _rhs: Vector2) -> Vector2 {
-		return new(self.x * _rhs.x, self.y * _rhs.y);
+    fn mul(self, rhs: Vector2) -> Vector2 {
+		return Vector2{x: self.x * rhs.x, y: self.y * rhs.y};
     }
 }
+
