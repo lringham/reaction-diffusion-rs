@@ -1,5 +1,6 @@
 use std::ops; // Used for operator overloading
 
+
 #[derive(Copy, Clone)]
 pub struct Vector2 {
 	pub x: f32,
@@ -29,6 +30,7 @@ impl Vector2 {
 		self.x = 0.0;
 		self.y = 0.0;
 	}
+
 	pub fn dot(&self, rhs: Vector2) -> f32 {
 		return self.x * rhs.x + self.y * rhs.y;
 	}
@@ -46,7 +48,6 @@ impl Vector2 {
 }
 
 // Operators ================
-#[allow(dead_code)]
 impl ops::Add<Vector2> for Vector2 {
 	type Output = Vector2;
 	fn add(self, rhs: Vector2) -> Vector2 {
@@ -57,7 +58,6 @@ impl ops::Add<Vector2> for Vector2 {
 	}
 }
 
-#[allow(dead_code)]
 impl ops::Sub<Vector2> for Vector2 {
 	type Output = Vector2;
 	fn sub(self, rhs: Vector2) -> Vector2 {
@@ -68,7 +68,6 @@ impl ops::Sub<Vector2> for Vector2 {
 	}
 }
 
-#[allow(dead_code)]
 impl ops::Mul<Vector2> for Vector2 {
 	type Output = Vector2;
 	fn mul(self, rhs: Vector2) -> Vector2 {
