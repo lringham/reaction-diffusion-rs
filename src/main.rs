@@ -1,16 +1,14 @@
-#![allow(non_snake_case)]
-
 pub struct ActivatorSubstrate {
 	pub activator_: Vec<f32>,
 	pub substrate_: Vec<f32>,
 }
 
 struct GrayScottParameters {
-	F: f32,
+	f: f32,
 	k: f32,
 	dt: f32,
-	Da: f32,
-	Ds: f32,
+	da: f32,
+	ds: f32,
 }
 
 fn get_index(x: u32, y: u32, width: u32) -> usize {
@@ -37,12 +35,7 @@ fn concentration_to_color(concentration: f32) -> char {
 
 	let mut concentration = 9.0 * (concentration / 0.4);
 	concentration = concentration.round();
-	concentration = if concentration < 0.0 { 0.0
-	} else if concentration > 9.0 {
-		9.0
-	} else {
-		concentration
-	};
+	concentration = if concentration < 0.0 { 0.0 } else if concentration > 9.0 { 9.0 } else { concentration };
 
 	let mut i = concentration as usize;
 	if i >= color_map.chars().count() {
@@ -68,14 +61,14 @@ fn gray_scott(
 			let lap_s = laplacian(&read_from.substrate_, x, y, width, height);
 
 			write_to.activator_[index] =
-				(params.Da * lap_a + s * a * a - (params.F + params.k) * a) * params.dt + a;
+				(params.da * lap_a + s * a * a - (params.f + params.k) * a) * params.dt + a;
 			write_to.substrate_[index] =
-				(params.Ds * lap_s - s * a * a + params.F * (1.0 - s)) * params.dt + s;
+				(params.ds * lap_s - s * a * a + params.f * (1.0 - s)) * params.dt + s;
 		}
 	}
 }
 
-fn drawPattern(width: u32, height: u32, concentrations: &Vec<f32>) {
+fn draw_pattern(width: u32, height: u32, concentrations: &Vec<f32>) {
 	// Draw boarder
 	for _i in 0..width {
 		print!("_");
@@ -106,11 +99,11 @@ fn main() {
 
 	// Reaction-diffusion parameters for the Gray-Scott model
 	let parameters = GrayScottParameters {
-		F: 0.042,
+		f: 0.042,
 		k: 0.063,
 		dt: 0.4,
-		Da: 0.25,
-		Ds: 0.5,
+		da: 0.25,
+		ds: 0.5,
 	};
 
 	// Initialize the domain with a square of activator
@@ -145,7 +138,7 @@ fn main() {
 	}
 
 	// Display the result
-	drawPattern(width, height, &reaction_diffusion0.activator_);
+	draw_pattern(width, height, &reaction_diffusion0.activator_);
 }
 
 /*										   Output Pattern
