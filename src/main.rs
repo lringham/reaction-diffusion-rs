@@ -37,8 +37,7 @@ fn concentration_to_color(concentration: f32) -> char {
 
 	let mut concentration = 9.0 * (concentration / 0.4);
 	concentration = concentration.round();
-	concentration = if concentration < 0.0 {
-		0.0
+	concentration = if concentration < 0.0 { 0.0
 	} else if concentration > 9.0 {
 		9.0
 	} else {
@@ -76,65 +75,7 @@ fn gray_scott(
 	}
 }
 
-fn main() {
-	// Domain size
-	let width: u32 = 100;
-	let height: u32 = 100;
-	let iters: u32 = 100000;
-
-	// Reaction-diffusion parameters for the Gray-Scott model
-	let parameters = GrayScottParameters {
-		F: 0.042,
-		k: 0.063,
-		dt: 0.2,
-		Da: 0.25,
-		Ds: 0.5,
-	};
-
-	// Initialize the domain
-	let mut reaction_diffusion0 = ActivatorSubstrate {
-		activator_: vec![0.0; (width * height) as usize],
-		substrate_: vec![1.0; (width * height) as usize],
-	};
-
-	let mut reaction_diffusion1 = ActivatorSubstrate {
-		activator_: vec![0.0; (width * height) as usize],
-		substrate_: vec![1.0; (width * height) as usize],
-	};
-
-	// Add a 10x10 square of activator
-	for x in 0..10 {
-		for y in 0..10 {
-			let index = get_index(x, y, width);
-			reaction_diffusion0.activator_[index] = 0.5;
-			reaction_diffusion1.activator_[index] = 0.5;
-		}
-	}
-
-	// Run the simulation
-	let mut mode = false;
-	for _i in 0..iters {
-		if mode {
-			gray_scott(
-				&reaction_diffusion0,
-				&mut reaction_diffusion1,
-				width,
-				height,
-				&parameters
-			);
-		} else {
-			gray_scott(
-				&reaction_diffusion1,
-				&mut reaction_diffusion0,
-				width,
-				height,
-				&parameters
-			);
-		}
-		mode = !mode;
-	}
-
-	// Display the result
+fn drawPattern(width: u32, height: u32, concentrations: &Vec<f32>) {
 	// Draw boarder
 	for _i in 0..width {
 		print!("_");
@@ -145,7 +86,7 @@ fn main() {
 	for x in 0..height {
 		for y in 0..width {
 			let index = get_index(x, y, width);
-			let concentration = reaction_diffusion0.activator_[index];
+			let concentration = concentrations[index];
 			print!("{}", concentration_to_color(concentration));
 		}
 		print!("\n");
@@ -157,3 +98,157 @@ fn main() {
 	}
 	print!("\n");
 }
+
+fn main() {
+	// Domain size
+	let width: u32 = 100;
+	let height: u32 = 100;
+
+	// Reaction-diffusion parameters for the Gray-Scott model
+	let parameters = GrayScottParameters {
+		F: 0.042,
+		k: 0.063,
+		dt: 0.4,
+		Da: 0.25,
+		Ds: 0.5,
+	};
+
+	// Initialize the domain with a square of activator
+	let mut reaction_diffusion0 = ActivatorSubstrate {
+		activator_: vec![0.0; (width * height) as usize],
+		substrate_: vec![1.0; (width * height) as usize],
+	};
+
+	let mut reaction_diffusion1 = ActivatorSubstrate {
+		activator_: vec![0.0; (width * height) as usize],
+		substrate_: vec![1.0; (width * height) as usize],
+	};
+
+	for x in 0..width/10 {
+		for y in 0..height/10 {
+			let index = get_index(x, y, width);
+			reaction_diffusion0.activator_[index] = 0.5;
+			reaction_diffusion1.activator_[index] = 0.5;
+		}
+	}
+
+	// Run the simulation
+	let iters: u32 = 10000;
+	let mut mode = false;
+	for _i in 0..iters {
+		if mode {
+			gray_scott(&reaction_diffusion0, &mut reaction_diffusion1, width, height, &parameters);
+		} else {
+			gray_scott(&reaction_diffusion1, &mut reaction_diffusion0, width, height, &parameters);
+		}
+		mode = !mode;
+	}
+
+	// Display the result
+	drawPattern(width, height, &reaction_diffusion0.activator_);
+}
+
+/*										   Output Pattern
+____________________________________________________________________________________________________
+                       ..:=+xX%%%XXxx+=;:...                      ...:;=+xxXX%%%Xx+=:..
+                       .:;=xXX%%XXXx+=;::..                        ..::;=+xXXX%%XXx=;:.
+                      ..:;=xX%%%XXxx+=;:..                          ..:;=+xxXX%%%Xx=;:..
+                      ..:;+xX%%%XXx++;::..                          ..::;++xXX%%%Xx+;:..
+                      ..:;+xX%%%XXx+=;::..                          ..::;=+xXX%%%Xx+;:..
+                      ..:;+xX%%%XXx+=;::..                          ..::;=+xXX%%%Xx+;:..
+                      ..:;+xX%%%XXx++;::..                          ..::;++xXX%%%Xx+;:..
+                      ..:;=xX%%%XXxx+=;:..                          ..:;=+xxXX%%%Xx=;:..
+                       .:;=xXX%%XXXx+=;::..                        ..::;=+xXXX%%XXx=;:.
+                       ..:=+xX%%%XXxx+=;:...                      ...:;=+xxXX%%%Xx+=:..
+                       ..:;=xXX%%XXXx+=;;:..                      ..:;;=+xXXX%%XXx=;:..
+                        ..:=+xXXXXXXXx+=;::..                    ..::;=+xXXXXXXXx+=:..
+                        ..:;=+xXXXXXXXx+=;:...                  ...:;=+xXXXXXXXx+=;:..
+                         ..:;=+xXXXXXXXx+=;:..                  ..:;=+xXXXXXXXx+=;:..
+                         ..::;+xxXXXXXXXx+=;:..                ..:;=+xXXXXXXXxx+;::..
+                          ..:;=+xxXXXXXXXx+;::..              ..::;+xXXXXXXXxx+=;:..
+                           ..:;=+xXXX%%XXx+=;:..              ..:;=+xXX%%XXXx+=;:..
+                           ...:;=+xXXX%%XXx+=;:..            ..:;=+xXX%%XXXx+=;:...
+                            ..::;=+xXXX%%XXx+;:..            ..:;+xXX%%XXXx+=;::..
+                             ..::;=+xXX%%%Xx+=;:..          ..:;=+xX%%%XXx+=;::..
+                              ..:;=+xXXX%%%Xx=;:..          ..:;=xX%%%XXXx+=;:..
+                              ...:;=+xXX%%%Xx+;:..          ..:;+xX%%%XXx+=;:...
+  ......                       ..:;=+xXXX%%XX+=:..          ..:=+XX%%XXXx+=;:..
+...........                    ..::;=+xXX%%%Xx=;:.          .:;=xX%%%XXx+=;::..                    .
+.::::::::....                   ..:;=+xXX%%%Xx=;:..        ..:;=xX%%%XXx+=;:..                   ...
+:;;;;;;;;::....                 ..:;=+xXX%%%Xx=;:..        ..:;=xX%%%XXx+=;:..                 ....:
+===++++===;::...                ..:;=+xXX%%%Xx=;:..        ..:;=xX%%%XXx+=;:..                ...::;
++xxxxxxxx+==;::...              ..:;=+xXX%%%Xx=;:..        ..:;=xX%%%XXx+=;:..              ...::;==
+xXXXXXXXXxx+=;::...            ...:;=+xXX%%%Xx=;:.          .:;=xX%%%XXx+=;:...            ...::;=+x
+XX%%%%%%XXXx+=;;:...           ..::;=+xXX%%XX+=;..          ..;=+XX%%XXx+=;::..           ...:;;=+xX
+%%%%%%%%%%XXx++=;::...        ...:;=+xxXX%%Xx+=:..          ..:=+xX%%XXxx+=;:...        ...::;=++xXX
+%%%%%%%%%%%XXxx+=;::....    ....::;=+xXX%%%Xx+;:..          ..:;+xX%%%XXx+=;::....    ....::;=+xxXX%
+%XXXXXXXX%%XXXxx+=;::..........::;=+xxXX%%XXx=;:..          ..:;=xXX%%XXxx+=;::..........::;=+xxXXX%
+XXXXXXXXXXXXXXXxx+=;;:::.....:::;=++xXX%%%Xx+=:..            ..:=+xX%%%XXx++=;:::.....:::;;=+xxXXXXX
+XXxxxxxxXXXXXXXXXx+==;;:::::::;;=++xXXX%%XXx+;:..            ..:;+xXX%%XXXx++=;;:::::::;;==+xXXXXXXX
+xxx++++xxxXXXXXXXXx++==;;;;;;;==++xXXX%%%Xx+=;:..            ..:;=+xX%%%XXXx++==;;;;;;;==++xXXXXXXXX
+x+++==+++xxXXXXXXXXxx++=======++xxXXX%%%XXx=;:..              ..:;=xXX%%%XXXxx++=======++xxXXXXXXXXx
++==;;;;==++xXXXX%XXXXxx+++++++xxxXXX%%%XXx+=::..              ..::=+xXX%%%XXXxxx+++++++xxXXXX%XXXXx+
+=;;::::;;==+xXXX%%XXXXXxxxxxxxxXXXX%%%XXx+=;:..                ..:;=+xXX%%%XXXXxxxxxxxxXXXXX%%XXXx+=
+;::::::::;;=+xXXX%%%XXXXXXXXXXXXX%%%%XXx+=;:..                  ..:;=+xXX%%%%XXXXXXXXXXXXX%%%XXXx+=;
+::......::;;=+xXXX%%%%XXXXXXXXX%%%%%XXx+=;:...                  ...:;=+xXX%%%%%XXXXXXXXX%%%%XXXx+=;;
+..........::;=+xxXX%%%%%%%%%%%%%%%XXXx+=;::..                    ..::;=+xXXX%%%%%%%%%%%%%%%XXxx+=;::
+..      ...::;=++xXX%%%%%%%%%%%%XXXxx+=;::..                      ..::;=+xxXXX%%%%%%%%%%%%XXx++=;::.
+.        ....:;;=+xxXXX%%%%%%XXXXxx+==;:...                        ...:;==+xxXXXX%%%%%%XXXxx+=;;:...
+           ...::;=++xxXXXXXXXXxxx++=;::...                          ...::;=++xxxXXXXXXXXxx++=;::...
+            ...::;;==++xxxxxx+++==;;::...                            ...::;;==+++xxxxxx++==;;::...
+              ...::;;;=========;;:::...                                ...:::;;=========;;;::...
+               ....::::;;;;;;;:::.....                                  .....:::;;;;;;;::::....
+                 ......::::::.......                                      .......::::::......
+                   ..............                                            ..............
+                        ....                                                      ....
+
+
+
+
+
+
+
+
+                        ....                                                      ....
+                   ..............                                            ..............
+                 ......::::::.......                                      .......::::::......
+               ....::::;;;;;;;:::.....                                  .....:::;;;;;;;::::....
+              ...::;;;=========;;:::...                                ...:::;;=========;;;::...
+            ...::;;==++xxxxxx+++==;;::...                            ...::;;==+++xxxxxx++==;;::...
+           ...::;=++xxXXXXXXXXxxx++=;::...                          ...::;=++xxxXXXXXXXXxx++=;::...
+.        ....:;;=+xxXXX%%%%%%XXXXxx+==;:...                        ...:;==+xxXXXX%%%%%%XXXxx+=;;:...
+..      ...::;=++xXX%%%%%%%%%%%%XXXxx+=;::..                      ..::;=+xxXXX%%%%%%%%%%%%XXx++=;::.
+..........::;=+xxXX%%%%%%%%%%%%%%%XXXx+=;::..                    ..::;=+xXXX%%%%%%%%%%%%%%%XXxx+=;::
+::......::;;=+xXXX%%%%XXXXXXXXX%%%%%XXx+=;:...                  ...:;=+xXX%%%%%XXXXXXXXX%%%%XXXx+=;;
+;::::::::;;=+xXXX%%%XXXXXXXXXXXXX%%%%XXx+=;:..                  ..:;=+xXX%%%%XXXXXXXXXXXXX%%%XXXx+=;
+=;;::::;;==+xXXX%%XXXXXxxxxxxxxXXXX%%%XXx+=;:..                ..:;=+xXX%%%XXXXxxxxxxxxXXXXX%%XXXx+=
++==;;;;==++xXXXX%XXXXxx+++++++xxxXXX%%%XXx+=::..              ..::=+xXX%%%XXXxxx+++++++xxXXXX%XXXXx+
+x+++==+++xxXXXXXXXXxx++=======++xxXXX%%%XXx=;:..              ..:;=xXX%%%XXXxx++=======++xxXXXXXXXXx
+xxx++++xxxXXXXXXXXx++==;;;;;;;==++xXXX%%%Xx+=;:..            ..:;=+xX%%%XXXx++==;;;;;;;==++xXXXXXXXX
+XXxxxxxxXXXXXXXXXx+==;;:::::::;;=++xXXX%%XXx+;:..            ..:;+xXX%%XXXx++=;;:::::::;;==+xXXXXXXX
+XXXXXXXXXXXXXXXxx+=;;:::.....:::;=++xXX%%%Xx+=:..            ..:=+xX%%%XXx++=;:::.....:::;;=+xxXXXXX
+%XXXXXXXX%%XXXxx+=;::..........::;=+xxXX%%XXx=;:..          ..:;=xXX%%XXxx+=;::..........::;=+xxXXX%
+%%%%%%%%%%%XXxx+=;::....    ....::;=+xXX%%%Xx+;:..          ..:;+xX%%%XXx+=;::....    ....::;=+xxXX%
+%%%%%%%%%%XXx++=;::...        ...:;=+xxXX%%Xx+=:..          ..:=+xX%%XXxx+=;:...        ...::;=++xXX
+XX%%%%%%XXXx+=;;:...           ..::;=+xXX%%XX+=;..          ..;=+XX%%XXx+=;::..           ...:;;=+xX
+xXXXXXXXXxx+=;::...            ...:;=+xXX%%%Xx=;:.          .:;=xX%%%XXx+=;:...            ...::;=+x
++xxxxxxxx+==;::...              ..:;=+xXX%%%Xx=;:..        ..:;=xX%%%XXx+=;:..              ...::;==
+===++++===;::...                ..:;=+xXX%%%Xx=;:..        ..:;=xX%%%XXx+=;:..                ...::;
+:;;;;;;;;::....                 ..:;=+xXX%%%Xx=;:..        ..:;=xX%%%XXx+=;:..                 ....:
+.::::::::....                   ..:;=+xXX%%%Xx=;:..        ..:;=xX%%%XXx+=;:..                   ...
+...........                    ..::;=+xXX%%%Xx=;:.          .:;=xX%%%XXx+=;::..                    .
+  ......                       ..:;=+xXXX%%XX+=:..          ..:=+XX%%XXXx+=;:..
+                              ...:;=+xXX%%%Xx+;:..          ..:;+xX%%%XXx+=;:...
+                              ..:;=+xXXX%%%Xx=;:..          ..:;=xX%%%XXXx+=;:..
+                             ..::;=+xXX%%%Xx+=;:..          ..:;=+xX%%%XXx+=;::..
+                            ..::;=+xXXX%%XXx+;:..            ..:;+xXX%%XXXx+=;::..
+                           ...:;=+xXXX%%XXx+=;:..            ..:;=+xXX%%XXXx+=;:...
+                           ..:;=+xXXX%%XXx+=;:..              ..:;=+xXX%%XXXx+=;:..
+                          ..:;=+xxXXXXXXXx+;::..              ..::;+xXXXXXXXxx+=;:..
+                         ..::;+xxXXXXXXXx+=;:..                ..:;=+xXXXXXXXxx+;::..
+                         ..:;=+xXXXXXXXx+=;:..                  ..:;=+xXXXXXXXx+=;:..
+                        ..:;=+xXXXXXXXx+=;:...                  ...:;=+xXXXXXXXx+=;:..
+                        ..:=+xXXXXXXXx+=;::..                    ..::;=+xXXXXXXXx+=:..
+                       ..:;=xXX%%XXXx+=;;:..                      ..:;;=+xXXX%%XXx=;:..
+____________________________________________________________________________________________________
+*/
