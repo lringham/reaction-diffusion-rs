@@ -1,6 +1,6 @@
-pub struct ActivatorSubstrate {
-	pub activator_: Vec<f32>,
-	pub substrate_: Vec<f32>,
+struct ActivatorSubstrate {
+	activator_: Vec<f32>,
+	substrate_: Vec<f32>,
 }
 
 struct GrayScottParameters {
