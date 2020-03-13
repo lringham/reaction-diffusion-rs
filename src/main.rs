@@ -32,9 +32,7 @@ fn laplacian(concentrations: &[f32], x: usize, y: usize, width: usize, height: u
 
 fn concentration_to_color(concentration: f32) -> char {
     let color_map = b" .:;=+xX%$";
-
     let concentration = 9.0 * (concentration / 0.4);
-
     let byte = *color_map
         .get(concentration.round() as usize)
         .or_else(|| color_map.last())
@@ -120,7 +118,7 @@ fn main() {
 	// Run the simulation
 	let iters: usize = 10000;
 	let mut mode = false;
-	for _i in 0..iters {
+	for _ in 0..iters {
 		if mode {
 			gray_scott(&reaction_diffusion0, &mut reaction_diffusion1, width, height, &parameters);
 		} else {
