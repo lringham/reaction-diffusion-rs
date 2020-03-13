@@ -1,6 +1,6 @@
 struct ActivatorSubstrate {
-	activator_: Vec<f32>,
-	substrate_: Vec<f32>,
+	activator: Vec<f32>,
+	substrate: Vec<f32>,
 }
 
 struct GrayScottParameters {
@@ -11,11 +11,11 @@ struct GrayScottParameters {
 	ds: f32,
 }
 
-fn get_index(x: u32, y: u32, width: u32) -> usize {
+fn get_index(x: usize, y: usize, width: usize) -> usize {
 	return (y * width + x) as usize;
 }
 
-fn laplacian(concentrations: &Vec<f32>, x: u32, y: u32, width: u32, height: u32) -> f32 {
+fn laplacian(concentrations: &[f32], x: usize, y: usize, width: usize, height: usize) -> f32 {
 	// Repeating BCs
 	let left = if x == 0 { width - 1 } else { x - 1 };
 	let right = if x >= width - 1 { 0 } else { x + 1 };
@@ -31,49 +31,44 @@ fn laplacian(concentrations: &Vec<f32>, x: u32, y: u32, width: u32, height: u32)
 }
 
 fn concentration_to_color(concentration: f32) -> char {
-	let color_map = " .:;=+xX%$";
+    let color_map = b" .:;=+xX%$";
 
-	let mut concentration = 9.0 * (concentration / 0.4);
-	concentration = concentration.round();
-	concentration = if concentration < 0.0 { 0.0 } else if concentration > 9.0 { 9.0 } else { concentration };
+    let concentration = 9.0 * (concentration / 0.4);
 
-	let mut i = concentration as usize;
-	if i >= color_map.chars().count() {
-		i = color_map.chars().count() - 1;
-	}
+    let byte = *color_map
+        .get(concentration.round() as usize)
+        .or_else(|| color_map.last())
+        .unwrap();
 
-	return color_map.chars().nth(i).unwrap();
+    byte.into()
 }
 
 fn gray_scott(
 	read_from: &ActivatorSubstrate,
 	write_to: &mut ActivatorSubstrate,
-	width: u32,
-	height: u32,
+	width: usize,
+	height: usize,
 	params: &GrayScottParameters
 ) {
 	for x in 0..width {
 		for y in 0..height {
 			let index = get_index(x, y, width);
-			let a = read_from.activator_[index];
-			let s = read_from.substrate_[index];
-			let lap_a = laplacian(&read_from.activator_, x, y, width, height);
-			let lap_s = laplacian(&read_from.substrate_, x, y, width, height);
+			let a = read_from.activator[index];
+			let s = read_from.substrate[index];
+			let lap_a = laplacian(&read_from.activator, x, y, width, height);
+			let lap_s = laplacian(&read_from.substrate, x, y, width, height);
 
-			write_to.activator_[index] =
+			write_to.activator[index] =
 				(params.da * lap_a + s * a * a - (params.f + params.k) * a) * params.dt + a;
-			write_to.substrate_[index] =
+			write_to.substrate[index] =
 				(params.ds * lap_s - s * a * a + params.f * (1.0 - s)) * params.dt + s;
 		}
 	}
 }
 
-fn draw_pattern(width: u32, height: u32, concentrations: &Vec<f32>) {
+fn draw_pattern(width: usize, height: usize, concentrations: &[f32]) {
 	// Draw boarder
-	for _i in 0..width {
-		print!("_");
-	}
-	print!("\n");
+	println!("{}", "_".repeat(width));
 
 	// Draw the pattern
 	for x in 0..height {
@@ -86,16 +81,13 @@ fn draw_pattern(width: u32, height: u32, concentrations: &Vec<f32>) {
 	}
 
 	// Draw boarder
-	for _i in 0..width {
-		print!("_");
-	}
-	print!("\n");
+	println!("{}", "_".repeat(width));
 }
 
 fn main() {
 	// Domain size
-	let width: u32 = 100;
-	let height: u32 = 100;
+	let width: usize = 100;
+	let height: usize = 100;
 
 	// Reaction-diffusion parameters for the Gray-Scott model
 	let parameters = GrayScottParameters {
@@ -108,25 +100,25 @@ fn main() {
 
 	// Initialize the domain with a square of activator
 	let mut reaction_diffusion0 = ActivatorSubstrate {
-		activator_: vec![0.0; (width * height) as usize],
-		substrate_: vec![1.0; (width * height) as usize],
+		activator: vec![0.0; (width * height) as usize],
+		substrate: vec![1.0; (width * height) as usize],
 	};
 
 	let mut reaction_diffusion1 = ActivatorSubstrate {
-		activator_: vec![0.0; (width * height) as usize],
-		substrate_: vec![1.0; (width * height) as usize],
+		activator: vec![0.0; (width * height) as usize],
+		substrate: vec![1.0; (width * height) as usize],
 	};
 
 	for x in 0..width/10 {
 		for y in 0..height/10 {
 			let index = get_index(x, y, width);
-			reaction_diffusion0.activator_[index] = 0.5;
-			reaction_diffusion1.activator_[index] = 0.5;
+			reaction_diffusion0.activator[index] = 0.5;
+			reaction_diffusion1.activator[index] = 0.5;
 		}
 	}
 
 	// Run the simulation
-	let iters: u32 = 10000;
+	let iters: usize = 10000;
 	let mut mode = false;
 	for _i in 0..iters {
 		if mode {
@@ -138,10 +130,10 @@ fn main() {
 	}
 
 	// Display the result
-	draw_pattern(width, height, &reaction_diffusion0.activator_);
+	draw_pattern(width, height, &reaction_diffusion0.activator);
 }
 
-/*										   Output Pattern
+/*                                      Output Pattern
 ____________________________________________________________________________________________________
                        ..:=+xX%%%XXxx+=;:...                      ...:;=+xxXX%%%Xx+=:..
                        .:;=xXX%%XXXx+=;::..                        ..::;=+xXXX%%XXx=;:.
